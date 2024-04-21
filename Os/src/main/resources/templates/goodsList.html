@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>商品列表</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- 引入bootstrap样式 -->
+    <link rel="stylesheet" type="text/css" th:href="@{/bootstrap/css/bootstrap.min.css}" />
+    <!-- 自定义样式 -->
+    <style>
+        .product-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .product-item {
+            width: 23%; /* 一行四个商品，留出一定空间 */
+            margin-bottom: 20px; /* 商品之间的间距 */
+        }
+        .product-item .panel {
+            height: 100%; /* 确保每个商品的高度一样 */
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-footer {
+            margin-top: auto; /* 商品详情信息在底部显示 */
+        }
+        .product-item img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="text-center">秒杀商品列表</h2>
+    <div class="product-list">
+        <!-- 商品列表循环 -->
+        <div class="product-item" th:each="goods, goodsStat : ${goodsList}">
+            <div class="panel panel-default">
+                <div class="panel-heading" th:text="${goods.name}"></div>
+                <div class="panel-body">
+                    <img th:src="@{ ${goods.imgs}}" alt="商品图片" />
+                </div>
+                <div class="panel-footer">
+                    <p>商品描述：<span th:text="${goods.description}"></span></p>
+                    <p>秒杀价：<span th:text="${goods.seckillPrice}"></span></p>
+                    <p>库存数量：<span th:text="${goods.stockCount}"></span></p>
+                    <a class="btn btn-info" th:href="'/goodsDetail.htm?goodsId=' + ${goods.id}">查看详情</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

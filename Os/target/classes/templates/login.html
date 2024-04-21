@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>登录</title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css" />
+    <!-- jQuery -->
+    <script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- jQuery Validator -->
+    <script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/jquery-validate/1.16.0/jquery.validate.min.js"></script>
+    <!-- Layer -->
+    <script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/layer/3.1.1/layer.js"></script>
+    <!-- MD5 -->
+    <script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/blueimp-md5/2.18.0/js/md5.min.js"></script>
+    <!-- Common JS -->
+    <script type="text/javascript" src="/js/common.js"></script>
+
+    <style>
+        body {
+            /*background-image: url("D:/desktop/index.png");*/
+            background-color: #204d74;
+            background-size: cover;
+            padding-top: 40px;
+            padding-bottom: 40px;
+            color: #444;
+            position: relative;
+            min-height: 100vh; /* Set minimum height to full height of the viewport */
+            margin: 0; /* Remove default margin */
+        }
+
+        .form-signin {
+            max-width: 330px;
+            padding: 15px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.8); /* Adding transparency to the form */
+            border-radius: 10px;
+        }
+
+        .form-signin .form-control {
+            position: relative;
+            box-sizing: border-box;
+            height: auto;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .form-signin .form-control:focus {
+            z-index: 2;
+        }
+
+        .form-signin input[type="text"] {
+            margin-bottom: 10px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .form-signin input[type="password"] {
+            margin-bottom: 10px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+            margin: 0 5px;
+        }
+
+        /* Position the footer at the bottom center */
+        .footer {
+            position: fixed;
+            bottom: 20px;
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Move it back half of its width to center it exactly */
+            color: #777;
+        }
+    </style>
+</head>
+<body class="text-center">
+<form class="form-signin" name="loginForm" id="loginForm" method="post">
+    <h1 class="h3 mb-3 font-weight-normal">用户登录</h1>
+    <label for="mobile" class="sr-only">请输入手机号码</label>
+    <input type="text" id="mobile" name="mobile" class="form-control" placeholder="手机号码" required="true" minlength="1" maxlength="11" >
+    </input>
+    <label for="password" class="sr-only">请输入密码</label>
+    <input type="password" id="password" name="password" class="form-control" placeholder="密码" required="true" minlength="1" maxlength="16">
+    </input>
+    <div class="btn-group">
+        <button class="btn btn-lg btn-success" type="submit" onclick="login()">登录</button>
+        <a href="/register" class="btn btn-lg btn-primary"  >注册</a>
+    </div>
+    <!-- Copyright text at the bottom center -->
+    <p class="footer">&copy; 2024 ly+xxy 版权所有 SecKill System</p>
+</form>
+</body>
+
+<script>
+    function login(){
+        $("#loginForm").validate({
+            submitHandler:function(form){
+                doLogin();
+            }
+        });
+    }
+    function doLogin(){
+        g_showLoading();
+
+        var inputPass = $("#password").val().toString();
+        var salt = g_passsword_salt;
+        var str = ""+salt.charAt(0)+salt.charAt(2) + inputPass +salt.charAt(1) + salt.charAt(3);
+        var password = md5(str);
+
+        $.ajax({
+            url: "/login1/doLogin",
+            type: "POST",
+            data:{
+                mobile:$("#mobile").val(),
+                password: inputPass
+            },
+            success:function(data){
+                layer.closeAll();
+                if(data.code == 0){
+                    layer.msg("成功");
+                    window.location.href="/goods1/toList";
+                }else{
+                    layer.msg(data.msg);
+                }
+            },
+            error:function(){
+                layer.closeAll();
+            }
+        });
+    }
+</script>
+</html>

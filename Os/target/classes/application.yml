@@ -1,0 +1,100 @@
+server:
+  port: 9191
+spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/seckill?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=CONVERT_TO_NULL&serverTimezone=GMT%2B8&useGeneratedKeys=true
+    username: root
+    password: 'Ly030704'
+    type: com.alibaba.druid.pool.DruidDataSource
+    filters: stat
+    maxActive: 10000
+    initialSize: 1000
+    maxWait: 100000
+    minIdle: 5000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 30000
+    validationQuery: select 'x'
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxOpenPreparedStatements: 20
+    host: 192.168.237.0
+    port: 6379
+    lettuce:
+      pool:
+        min-idle: 0
+        max-active: 8
+        max-idle: 8
+        max-wait: -1ms
+    connect-timeout: 30000ms
+#    password: 'root'
+  rabbitmq:
+    addresses:
+    host: 192.168.237.0
+    port: 5672
+    username: root
+    password: root
+    virtual-host: /
+    listener:
+      simple:
+        max-concurrency: 10
+        concurrency: 10
+        prefetch: 1
+        auto-startup: true
+        default-requeue-rejected: true
+    template:
+      retry:
+        enabled: false
+        initial-interval: 1000
+        max-attempts: 3
+        max-interval: 10000
+        multiplier: 1.0
+  redis:
+    host: 192.168.237.0
+    port: 6379
+    timeout: 1000
+    password: 'root'
+    poolMaxTotal: 3000
+    poolMaxIdle: 1500
+    poolMaxWait: 1500
+
+mybatis:
+#  mapper-locations: classpath:mapper/*.xml
+
+  type-aliases-package: com.rabbiter.em.SecKill.entity
+  mapper-locations: classpath:com/rabbiter/em/SecKill/dao/*.xml
+
+  configuration:
+    map-underscore-to-camel-case: true
+    use-generated-keys: true
+    use-column-label: true
+    default-fetch-size: 100
+    default-statement-timeout: 3000
+
+
+redis:
+  host: 192.168.237.0
+
+  port: 6379
+  timeout: 1000
+  password: 'root'
+  poolMaxTotal: 1000
+  poolMaxIdle: 500
+  poolMaxWait: 500
+
+#alipay
+alipay:
+  app-id: 9021000135611926
+  appPrivateKey: MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCMwJaudEjCeJXEec4be69i9EOazK1dASrdtVNRk9KqBNOteK78+chn5qAhVwsjyiypo3OMJ2s74D/vDeGNt6dnc2vot6XyyCU5fo5fHXqrdBWbeOI0rTnAmftMX8JEZWZ8ngMzncqOKcoHfc0peSSy1J6ee5laXR+y2eZYe9U+2Uc9yxuR4j56vGOH7e+bsUgOD36v3D5TUdcsn4XY+w7zjQ2gXV66RtMtGfRpBt+AI8pO8w/7RlreCbSB0j3osllFVzeA8A28lX17+fiJWC83nWhPmfcmNICyPq11OljE3DA3ABl/7ou8M2wJmk3YxbajARk6jLrG8sj9zGa0p1ojAgMBAAECggEBAIyaGiu9F63EfX+eWaiUnngQH7R0P74HW4XMC6YTL78NQVMpmkw1TN+Vv2JurD8dSA5RrCxWeEWA1vz7ddR2oHC0GRiI0+o5yw2rAZe8P/0j4i3DzNvoKyfd6e26PrrKPF3CDtqyBlSLJDjlj1udm25U/Pq950wgeHjWOMctNLEpJSjBgkPpjIdV8CmifHFNKovKFE4Pt97ofVGpE2HTIxhLzuk2OgLWUV44fOFF1RHtiJyCjrrlc8/T/Yoal9Z8bugT2xIrEK1EYeBgxC90a1t/XXcCL5eqB3vVpchqe/GXn4z8yVnKNHnOVuQSlY/2oiRcNkalRtcWDB0f1FA8CTkCgYEA36gCvZ0qm5dJj23mnw3hF1oLAmLIWHiObN5lBzNS4dvae76jiaghIK+EtAWi7Y8I3gPsInmRJkK8XlaeZgxgNcRpgWIOCVlz0Zx4RAsEhDFrCxrLtklGMuIUeLPmSzwEaOX/Uraqs1cguiVysCeR4F05PFd6+dhi/9QmCHuMko0CgYEAoRtitYjmwyZCXorFDZ378KXMBv1RYH4xGqSbYbf1lwnR7SBMj2VNyBbdtdFH2gbmMYql6B3NGFZm9rVg9BPY1Wpe3ni8GVJxHSRGmP+x7p5/sRYKT3MDIkeRQenPsoA64+MX0KhZavGPvuY/tIzQ1XuTAgE3U5K5JRxC0PP2y28CgYB8shSNGSJXSzsFD7Yj+b4Eofw/YUnoIZbu1fOn1xKfwE8I7RoKtsV5jsJDCF11a2j7N16hPfwSQ+T4B/0aUk4VzCMysrO2vLvZIw7eiPIErfTLZS4svJ+54NifD1YXnierQIhg2l1DzhD+F8Dgu78WQ4OUxAVZZS6VCfgGhLO0RQKBgCZpqy1xiOP62VRFbhqDErEcNvtrpt2E+RxLJykzfYEXvE/3pYmDM/qDSTWywpj/kB872bbwdBhbcY1dTdKkcMzh4eDVlLPM7l9uaM7OGJS2geetQ6QR3itsOPwoTXdYD7KKUQFVQoy3L/jqWUIpWRmtry2JMLHih/aLOHst0ChNAoGAZnglZ5PHTmLV4pE+VeKn7owiu+NRU4UD+ub3UPfZkKx/FHV5xj7R0X0LDcy19SDW+vUJtn9mwgGsQI20mdKHJIxRXQU62y2MSQ+uk7c5zM36H367earJxiAU+qGXof68JcEwn/8LXgLai8LgzeFHlii+2mkNXsh0XVo5tuVMyJE=
+  alipayPublicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkQkeuD5pOw17pYR9yAwYvCDttojNASqEGXUbmzT8YGEgmpTGMLu9Ke6BPZ4OIvo3jH7ri2/0fNQlJjEmf/cmQlyMJeLSqwP4IPQD0k5Vh5W18uhY/i9m2egikRSt2TwR7UspmN78crouruwLrYGZnWBMaJPO1T7t/B28hAExis0WdIuZ0Mh99EnZzQEmmfbMapV5mp4PsTlqKYPdBU3d1xZlSrP19Otjgm9/LgCyzrVVMVtqiBLL3S73P41IKWCglQzPlWVd8aFnpFMI6k0rUieneZCNjeoi6FF8Jvvv8iR6AI07vMre3Gu6D//TDzHVIwDLKj8EoZnpbw8ilK450wIDAQAB
+  notifyUrl:  http://lyxxy.natapp1.cc/alipay/notify
+  return-url: http://localhost:9192/orderlist
+
+python:
+  service:
+    url: "http://localhost:5000"

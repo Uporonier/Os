@@ -1,0 +1,163 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>订单详情</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- jquery -->
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" src="/jquery-validation/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="/jquery-validation/localization/messages_zh.min.js"></script>
+    <!-- layer -->
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" src="/js/md5.min.js"></script>
+    <!-- common.js -->
+    <script type="text/javascript" src="/js/common.js"></script>
+</head>
+<body>
+<div class="panel panel-default">
+  <div class="panel-heading">秒杀订单详情</div>
+  <table class="table" id="goodslist">
+      <tr>
+        <td>商品名称</td>
+        <td id="goodsName" colspan="3"></td>
+      </tr>
+     <tr>
+        <td>商品图片</td>
+        <td colspan="2"><img id="goodsImg" width="200" height="200" /></td>
+
+     </tr>
+      <tr>
+        <td>订单价格</td>
+        <td colspan="2" id="orderPrice"></td>
+     </tr>
+     <tr>
+     		<td>下单时间</td>
+        	<td id="createDate" colspan="2"></td>
+     </tr>
+     <tr>
+     	<td>订单状态</td>
+        <td id="orderStatus">
+<!--        	<span if="${order1.status eq 0}">未支付</span>-->
+<!--        	<span if="${order1.status eq 1}">待发货</span>-->
+<!--        	<span if="${order1.status eq 2}">已发货</span>-->
+<!--        	<span if="${order1.status eq 3}">已收货</span>-->
+<!--        	<span if="${order1.status eq 4}">已退款</span>-->
+<!--        	<span if="${order1.status eq 5}">已完成</span>-->
+        </td>
+        <td>
+        	<button class="btn btn-primary btn-block" type="submit" id="payButton" onclick=pay()>立即支付</button>
+        </td>
+     </tr>
+      <tr>
+     		<td>收货人</td>
+        	<td colspan="2">Ly  18769800000</td>
+     </tr>
+     <tr>
+     		<td>收货地址</td>
+        	<td colspan="2">青岛科技大学崂山校区</td>
+     </tr>
+  </table>
+</div>
+
+</body>
+</html>
+<script>
+    $(function (){
+        getOrderDetail();
+    })
+
+    var orderDetailData; // 全局变量，用于保存订单详情数据
+    function pay() {
+        var orderId = geturlParam("orderId"); // 获取订单ID
+        console.log(orderDetailData)
+        // 发送支付请求
+        $.ajax({
+            url: "/alipay/pay", // 后端处理支付请求的接口地址
+            type: "GET",
+            data: {
+                orderId: orderId, // 将订单ID发送给后端
+                goodsName: orderDetailData.goodsRP.goodsName,
+                price: orderDetailData.order1.goodsPrice,
+            },
+            success: function(data) {
+                // 支付请求成功，将支付页面展示给用户
+                $("body").html(data);
+            },
+            error: function() {
+
+                console.log(orderDetailData)
+                console.log(orderDetailData.order1.price)
+                // 支付请求失败，提示用户支付失败
+                layer.msg("支付失败，请稍后重试！");
+                // console.log(orderDetailData.goodsName)
+                // console.log(orderDetailData.order1.price)
+            }
+        });
+    }
+
+
+    function getOrderDetail(){
+        var orderId=geturlParam("orderId");
+        $.ajax({
+            url:"/order1/detail",
+            type:"GET",
+            data:{
+                orderId: orderId,
+
+            },
+
+            success:function (data){
+                if (data.code == 0){
+                    //成功
+                    console.log("订单生成成功");
+                    orderDetailData=data.data
+                    console.log(orderDetailData)
+                    xuanran(data.data);
+
+                }else {
+                    //失败
+                    console.log("订单失败")
+                    layer.msg(data.msg)
+                }
+            },
+            error:function (){
+                    console.log("订单eeerror")
+                    layer.msg("orderDetail.htm请求错 误")
+            },
+
+        });
+
+    }
+    function xuanran(detail){
+        var goodsRP=detail.goodsRP;
+        var order1=detail.order1;
+
+        orderDetailData=detail
+
+        $("#goodsName").text(goodsRP.goodsName);
+        $("#goodsImg").attr("src",goodsRP.goodsImg);
+        $("#goodsPrice").text(order1.goodsPrice);
+        $("#createDate").text(new Date(order1.createDate).format("yyyy-MM-dd hh:mm:ss"));
+        //判断一下订单的状态
+        var status="";
+        if(order1.status==0) status="未支付";
+        else if(order1.status==1)status="待发货";
+        else if (order1.status==2)status="已发货";
+        else if (order1.status==3)status="已收货";
+        else if(order1.status==4) status="已退款";
+        else if (order1.status==5) status="已经完成";
+        else status="订单状态未知";
+        $("#orderStatus").text(status)
+    }
+
+
+
+
+
+
+</script>

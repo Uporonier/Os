@@ -1,0 +1,190 @@
+    <!DOCTYPE HTML>
+    <html>
+    <head>
+        <title>商品详情</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <!-- 引入必要的 JavaScript 和 CSS -->
+        <script type="text/javascript" src="/js/jquery.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css" />
+        <script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="/jquery-validation/jquery.validate.min.js"></script>
+        <script type="text/javascript" src="/jquery-validation/localization/messages_zh.min.js"></script>
+        <script type="text/javascript" src="/layer/layer.js"></script>
+        <script type="text/javascript" src="/js/md5.min.js"></script>
+        <script type="text/javascript" src="/js/common.js"></script>
+    </head>
+    <body>
+
+    <div class="container">
+        <h2 class="text-center">秒杀商品详情</h2>
+        <div id="goodsContainer" class="row">
+            <!-- 商品详情将从上到下排列显示 -->
+        </div>
+    </div>
+
+    <script>
+        var goodsRp1;
+        $(function(){
+            getDetail();
+        });
+
+        function getDetail() {
+             goodsId = geturlParam("goodsId");
+            console.log(goodsId);
+            $.ajax({
+                url: "/goods1/GoodsDetail/" + goodsId,
+                type: "GET",
+                success: function(data){
+                    if (data.code == 0){
+                        renderGoods(data.data);
+                    } else {
+                        layer.msg(data.msg);
+                    }
+                },
+                error: function(){
+                    layer.msg("goodsDetail.htm请求错误");
+                },
+            });
+        }
+
+        function renderGoods(detail) {
+            // log.msg(detail)
+            var goodsRP = detail.secKillGoodsRP;
+            goodsRp1=goodsRP
+            var html = '';
+            html += '<div class="col-md-12">';
+            html += '<div class="panel panel-default">';
+            html += '<div class="panel-heading">' + goodsRP.name + '</div>';
+            html += '<div class="panel-heading">' + goodsRP.id + '</div>';
+            html += '<div class="panel-body">';
+            html += '<img src="' + goodsRP.imgs + '" width="200" height="200">';
+            html += '<p>商品描述: ' + goodsRP.description + '</p>';
+            html += '<p>秒杀开始时间: ' + new Date(goodsRP.startDate).format("yyyy-MM-dd hh:mm:ss") + '</p>';
+            html += '<p>秒杀价: ' + goodsRP.seckillPrice + '</p>';
+            html += '<p>库存数量: ' + goodsRP.stockCount + '</p>';
+            <!-- 在商品详情页面中添加一个按钮 -->
+            html += '<button class="btn btn-primary btn-block" type="button" onclick="doSecKill(' + goodsRP.id + ')">立即秒杀</button>';
+            html += '</div></div></div>';
+            $('#goodsContainer').append(html);
+        }
+
+        function doSecKill(goodsId) {
+            $.ajax({
+                url: "/seckill/doSeckill",
+                type: "POST",
+                data: { goodsId: goodsId },
+                xhrFields: {
+                    withCredentials: true // 允许跨域请求携带cookie
+                },
+                success: function(data){
+                    if (data.code == 0){
+                        console.log("秒杀成功");
+                        secres(goodsId);
+                    } else {
+                        console.log("秒杀失败");
+                        layer.msg(data.msg);
+                    }
+                },
+                error: function(){
+                    console.log("秒杀error");
+                    layer.msg("goodsDetail.htm请求错误");
+                },
+            });
+        }
+
+        // 秒杀结果 seckill result
+        function secres(goodsId) {
+            $.ajax({
+                url: "/seckill/getsecres",
+                type: "GET",
+                data: { goodsId: goodsId },
+                success: function(data){
+                    if (data.code == "0"){
+                        var tmp = data.data;
+                        if (tmp == "-1"){
+                            layer.msg("秒杀失败");
+                        } else if (tmp === "0"){
+                            layer.msg("轮询等待!");
+                            setTimeout(function(){
+                                secres(goodsId);
+                            }, 66);
+                        } else {
+                            if(tmp == "已付款")
+                            {
+                                layer.msg("您已秒杀过该商品。不可重复秒杀！");
+                            }
+                            else if (tmp=="已失效"){
+                                layer.msg("您在规定时间内未成功付款，抱歉已失去秒杀资格！")
+                            }
+                            else if (tmp=="已支付"){
+                                layer.msg("您已购买过该商品! ")
+                            }
+                            else{   //待付款的订单
+                                layer.confirm("秒杀成功！是否立即支付？", {
+                                    btn: ['是', '否'],
+                                    yes: function(){
+                                        // 用户选择立即支付，跳转到支付页面
+                                        // window.location.href = "http://localhost:9192/cart";
+                                        /****************************************************************************************/
+                                        goToOrder(tmp);
+
+                                    },
+                                    no: function(){
+                                        // 用户选择不支付，可以在这里进行其他操作，或者不做任何处理
+                                    }
+                                });
+                            }
+
+                        }
+                    } else {
+                        //code不是0
+                        layer.msg("code!=0");
+                        layer.msg(data.msg);
+                    }
+                },
+                error: function(){
+                    layer.msg("secres方法请求错误");
+                },
+            });
+        }
+        function goToOrder(orderNo) {
+            //获取一下页面的信息
+            var realPrice=goodsRp1.seckillPrice
+            var num=1
+            var cartId=-1
+            var good = {
+                id: goodsRp1.id,
+                name:goodsRp1.name,
+                imgs:goodsRp1.imgs,
+                discount:1
+                // 其他需要的商品属性
+            };
+            // {"id":7,"name":"休闲鞋","imgs":"/file/0afa4eb1c51943808f6e83cd9ced25e8.jpg","discount":0.96}
+            var standard="标准版";
+            // var goodsId=goodsRP.id
+            console.log(standard);
+            console.log(goodsRp1);
+            // var standard = "标准版"; // 这里应该是用户选择的规格，暂时硬编码为"标准版"
+            // var num = 1; // 假设数量为1，你应该根据实际逻辑获取这个值
+            // var realPrice = // 从商品详情中获取实际价格
+            // var cartId = "123"; // 示例购物车ID，实际情况应从逻辑中获取
+
+
+            let url = `http://localhost:9192//preOrder1?good=${encodeURIComponent(JSON.stringify(good))}&realPrice=${encodeURIComponent(realPrice)}&num=${encodeURIComponent(num)}&standard=${encodeURIComponent(standard)}&cartId=${encodeURIComponent(cartId)}&orderNo=${encodeURIComponent(orderNo)}`;
+            window.location.href =url;
+            // window.location.href = "http://localhost:9192/preOrder";
+            // this.$router.push({
+            //     name: "preOrder",
+            //     query: {
+            //         good: JSON.stringify(this.good),
+            //         realPrice: this.realPrice,
+            //         num: this.count,
+            //         standard: this.checkedStandard,
+            //     },
+            // });
+        }
+
+    </script>
+
+    </body>
+    </html>
