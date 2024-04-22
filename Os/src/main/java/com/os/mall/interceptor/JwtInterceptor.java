@@ -45,6 +45,10 @@ public class JwtInterceptor implements HandlerInterceptor {
         if (requestURI.startsWith("/recommend/")) {
             // 如果是，直接返回true放行
             return true;
+        }// 检查请求的URI是否是需要跳过的
+        if (requestURI.startsWith("/saleadvice/")) {
+            // 如果是，直接返回true放行
+            return true;
         }
         System.out.println("执行到了JwtInterceptor");
         String token = request.getHeader("token");

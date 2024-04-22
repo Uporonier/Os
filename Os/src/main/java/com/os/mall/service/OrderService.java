@@ -20,6 +20,7 @@ import com.os.mall.mapper.OrderGoodsMapper;
 import com.os.mall.mapper.OrderMapper;
 import com.os.mall.mapper.StandardMapper;
 import com.os.mall.utils.TokenUtils;
+import javafx.beans.binding.Bindings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -32,6 +33,8 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -266,5 +269,22 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
 
         return goodsPage;
     }
+    public Map<String, Integer> calculateSalesByHour() {
+        List<Order> orders = this.list(); // 假设获取所有订单
+        Map<String, Integer> salesByHour = new HashMap<>();
 
+        orders.forEach(order -> {
+            String hour = "";
+            // 创建格式器
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH");
+
+            // 使用格式器格式化当前时间
+            // 获取当前的时间
+            LocalTime now = LocalTime.now();
+            hour = now.format(formatter);
+            salesByHour.merge(hour, 1, Integer::sum);
+        });
+
+        return salesByHour;
+    }
 }

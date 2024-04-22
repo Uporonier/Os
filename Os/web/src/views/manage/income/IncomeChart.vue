@@ -2,7 +2,7 @@
   <div>
     <el-tabs v-model="activeName" @tab-click="handleClick">
       <el-card
-          v-if="activeName !== 'hourly'"
+          v-if="activeName !== 'hourly' && activeName !== 'salesAdvice'"
       style="
       display: inline-block;
       margin-left: 50px;
@@ -53,6 +53,12 @@
         <div id="hourlyOrdersChart" style="width: 1000px; height: 500px; margin: auto;"></div>
       </el-tab-pane>
 
+      <el-tab-pane label="销售建议" name="salesAdvice">
+        <div style="margin: 20px;">
+          <div v-html="salesAdviceHtml"></div> <!-- 使用 v-html 指令展示 HTML 内容 -->
+        </div>
+      </el-tab-pane>
+
 
 
 
@@ -63,6 +69,7 @@
 
 <script>
 import * as echarts from "echarts";
+import axios from "axios";
 export default {
   name: "IncomeChart",
   data() {
@@ -78,11 +85,17 @@ export default {
       total: 0,
       // 其他已定义的数据...
       selectedDate: new Date(), // 默认选择当前日期
-      hourlyOrders: []
-
+      hourlyOrders: [],
+      salesAdviceHtml: '', // 用来存储从服务器获取的销售建议HTML内容
     };
   },
   methods: {
+    fetchSalesAdvice() {
+      axios.get('http://localhost:9191/saleadvice/marketing-suggestions').then(response => {
+        this.salesAdviceHtml = response.data;
+      }).catch(error => console.error('Failed to fetch sales advice:', error));
+
+    },
     fetchHourlyOrders() {
       // 手动格式化日期
       let year = this.selectedDate.getFullYear();
@@ -139,6 +152,9 @@ export default {
           break;
         case "line2":
           this.total = this.totalMonth;
+          break;
+        case "salesAdvice":  // 当用户点击销售建议标签时，调用方法
+          this.fetchSalesAdvice();
           break;
 
       }
@@ -324,4 +340,5 @@ export default {
 </script>
 
 <style scoped>
+
 </style>

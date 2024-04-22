@@ -17,6 +17,7 @@ import com.os.mall.entity.dto.GoodDTO;
 import com.os.mall.exception.ServiceException;
 import com.os.mall.mapper.GoodMapper;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -26,7 +27,10 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.os.mall.constants.RedisConstants.GOOD_TOKEN_KEY;
@@ -88,6 +92,12 @@ public class GoodService extends ServiceImpl<GoodMapper, Good> {
         redisTemplate.delete(GOOD_TOKEN_KEY+id);
         goodMapper.fakeDelete(id);
     }
+
+    // 方法来获取销量低的商品
+    public List<Good> findLowSaleGoods(Long salesThreshold) {
+        return goodMapper.findLowSaleGoods(salesThreshold);
+    }
+
     //保存商品信息
     public Long saveOrUpdateGood(Good good) {
         System.out.println(good);
@@ -199,6 +209,30 @@ public class GoodService extends ServiceImpl<GoodMapper, Good> {
         // 注意转换Pageable为MyBatis Plus的Page对象
         Page<Good> page = new Page<>(pageable.getPageNumber(), pageable.getPageSize());
         return goodMapper.selectPageByGoodIdIn(page, recommendedIds);
+    }
+    @Autowired
+    OrderService orderService;
+
+    public List<String> generateMarketingSuggestions() {
+        List<String> suggestions = new ArrayList<>();
+
+        // 分析低销量商品
+        List<Good> lowSaleGoods = this.findLowSaleGoods(10L); // 假定销量低于10为低销量
+        if (!lowSaleGoods.isEmpty()) {
+            suggestions.add("<h1>以下商品销量较低，建议进行促销或降价：</h1>");
+            lowSaleGoods.forEach(good -> suggestions.add(String.format("商品名: %s, 销量: %d", good.getName(), good.getSales())));
+        }
+
+        // 分析销售高峰时段
+        Map<String, Integer> salesByHour = orderService.calculateSalesByHour();
+        Integer maxSales = Collections.max(salesByHour.values());
+        salesByHour.forEach((hour, sales) -> {
+            if (sales.equals(maxSales)) {
+                suggestions.add(String.format("<h1>销售高峰期在 %s 点，建议在此时段推广活动。</h1>", hour));
+            }
+        });
+
+        return suggestions;
     }
 
 }

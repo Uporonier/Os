@@ -19,7 +19,8 @@ public interface GoodMapper extends BaseMapper<Good> {
             "create_time = #{good.createTime}, recommend = #{good.recommend}, is_sec_kill = #{good.isSecKill}, " +
             "is_delete = #{good.isDelete} WHERE id = #{good.id}")
     void updateGood(@Param("good") Good good);
-
+    @Select("SELECT * FROM good WHERE sales < #{salesThreshold} AND is_delete = 0")
+    List<Good> findLowSaleGoods(Long salesThreshold);
 
     @Select("select * from good_standard where good_id = #{id}")
     List<GoodStandard> getStandardById(int id);
